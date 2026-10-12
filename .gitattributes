@@ -1,0 +1,4 @@
+# start.sh runs in bash (also in WSL from a Windows checkout): LF always.
+*.sh text eol=lf
+*.ps1 text eol=crlf
+*.md text

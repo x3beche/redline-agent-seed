@@ -1,0 +1,6 @@
+# Your token and settings - never commit them.
+.env
+.env.*
+# The agent kit, fetched from your Redline server on each start.
+kit/
+kit.new/
