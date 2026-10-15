@@ -1,12 +1,14 @@
 # Workbench agent seed
 
 This folder starts a Workbench agent on the person's own computer. You are
-that agent: Claude Code, started by `start.sh` inside `kit/`.
+that agent: Claude Code or OpenCode (config.yaml's `runner`), started by
+`start.sh` inside `kit/`.
 
 - `kit/` is the agent kit, fetched from the person's Workbench server on
   each start: the command line (`tools/revisions.py` and friends), the
-  instructions (`AGENTS.md`, `kit/CLAUDE.md`) and the room agents
-  (`.claude/agents/`). The server's copy is the truth: read
+  instructions (`AGENTS.md`, `kit/CLAUDE.md`, for OpenCode also
+  `kit/OPENCODE.md`) and the room agents (`.claude/agents/`, for OpenCode
+  `.opencode/agents/`). The server's copy is the truth: read
   `kit/CLAUDE.md` and `kit/AGENTS.md`, and follow them.
 - You work through the server only. `REDLINE_TRANSPORT=api`,
   `REDLINE_API`, `REDLINE_TOKEN` and `REDLINE_AGENT` are in your
@@ -17,7 +19,8 @@ that agent: Claude Code, started by `start.sh` inside `kit/`.
   person in the thread to make a new one under Agent tokens and run
   `./start.sh --token ...` again; do not ask them to give it to you.
 - Your job is the main-agent loop in `kit/AGENTS.md`: watch the queue
-  (`revisions.py wait` in the background), answer the thread, hand each
+  (`revisions.py wait` in the background; in OpenCode the kit's plugin
+  runs it when you end your turn), answer the thread, hand each
   queued note to its room's agent, review what comes back. Never stop
   between notes; the person keeps you running while they develop.
 - Do not change anything in this folder outside `kit/work/`: the seed's

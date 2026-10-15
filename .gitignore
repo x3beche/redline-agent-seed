@@ -1,6 +1,12 @@
 # Your token and settings - never commit them.
 .env
 .env.*
+config.yaml
+config.yaml.new
+# What start.sh did (logs/start.log), and its start lock.
+logs/
+.start.lock
+.start.lock.d/
 # The agent kit, fetched from your Redline server on each start.
 kit/
 kit.new/
