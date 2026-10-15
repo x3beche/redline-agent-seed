@@ -19,6 +19,7 @@ param(
   [string]$Name = "",
   [string]$Runner = "",
   [string]$Model = "",
+  [string]$Session = "",
   [switch]$Service,
   [switch]$Install,
   [switch]$Uninstall,
@@ -95,6 +96,7 @@ if ($Token)      { $argv += @("--token", $Token) }
 if ($Name)       { $argv += @("--name", $Name) }
 if ($Runner)     { $argv += @("--runner", $Runner) }
 if ($Model)      { $argv += @("--model", $Model) }
+if ($Session)    { $argv += @("--session", $Session) }
 if ($Restart)    { $argv += "--restart" }
 if ($Stop)       { $argv += "--stop" }
 if ($Status)     { $argv += "--status" }

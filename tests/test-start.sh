@@ -56,6 +56,7 @@ check "config.yaml with quotes and comments" 'grep -q "^runner: opencode$" <<<"$
 check "OpenCode command line" 'grep -q "^command: .*opencode --auto -m test/vision --prompt <prompt>$" <<<"$out"'
 check "session and unit from config.yaml" 'grep -q "^session: test-session$" <<<"$out" && grep -q "^service: workbench-agent-test-session (not installed)$" <<<"$out"'
 check "--runner on the command line wins" 'grep -q "^runner: claude$" <<<"$(run --dry-run --runner claude)"'
+check "--session names the session" 'grep -q "^session: mybox$" <<<"$(run --dry-run --session mybox)"'
 
 # Resuming: a main session left by the kit's plugin is resumed.
 mkdir -p kit/work && echo ses_abc123 > kit/work/.main-session

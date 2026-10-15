@@ -16,7 +16,7 @@
 #   ./start.sh --dry-run      print the settings it would use, start nothing
 #
 # Options: --runner claude|opencode, --model provider/model (OpenCode),
-# --name <agent name>, --headless (OpenCode without its screen).
+# --name <agent name>, --session <tmux session>, --headless (no screen).
 # Settings are kept in config.yaml next to this file (flat `key: value`
 # lines), the token in .env (readable only by you); neither is committed.
 # The agent kit - the command line and the instructions the agent follows -
@@ -47,7 +47,7 @@ log() {
 
 usage() { sed -n '2,23p' "$0" | sed 's/^# \{0,1\}//'; }
 
-API="" TOKEN="" NAME="" RUNNER="" MODEL="" HEADLESS="" MODE="start" DRY=0 WANT_SERVICE=0
+API="" TOKEN="" NAME="" RUNNER="" MODEL="" HEADLESS="" SESSION_OPT="" MODE="start" DRY=0 WANT_SERVICE=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --api) [ $# -ge 2 ] || die "--api needs the server's address"; API="$2"; shift 2 ;;
@@ -56,6 +56,8 @@ while [ $# -gt 0 ]; do
     --token=*) TOKEN="${1#*=}"; shift ;;
     --name) [ $# -ge 2 ] || die "--name needs a name"; NAME="$2"; shift 2 ;;
     --name=*) NAME="${1#*=}"; shift ;;
+    --session) [ $# -ge 2 ] || die "--session needs a name"; SESSION_OPT="$2"; shift 2 ;;
+    --session=*) SESSION_OPT="${1#*=}"; shift ;;
     --runner) [ $# -ge 2 ] || die "--runner needs claude or opencode"; RUNNER="$2"; shift 2 ;;
     --runner=*) RUNNER="${1#*=}"; shift ;;
     --model) [ $# -ge 2 ] || die "--model needs provider/model"; MODEL="$2"; shift 2 ;;
@@ -123,7 +125,7 @@ load_settings() {
   [ -n "$MODEL" ]    || MODEL="$(cfg_get model)"
   [ -n "$HEADLESS" ] || HEADLESS="$(cfg_get headless)"
   ROOM_MODEL="$(cfg_get room_model)"
-  SESSION="${REDLINE_SESSION:-$(cfg_get session)}"
+  SESSION="${SESSION_OPT:-${REDLINE_SESSION:-$(cfg_get session)}}"
   SESSION="${SESSION:-redline-agent}"
   CLAUDE_FLAGS="$(cfg_get claude_flags)"
   [ -n "$CLAUDE_FLAGS" ] || CLAUDE_FLAGS="$(env_get REDLINE_CLAUDE_FLAGS)"
@@ -177,9 +179,11 @@ write_env() {
 
 save_settings() {
   [ "$DRY" = 1 ] && return 0
-  local headless="no" s
+  local headless="no"
   [ "$HEADLESS" = yes ] && headless="yes"
-  s="$(cfg_get session)"; SESSION_SET="$s"
+  # The session is kept, not only used now: the next ./start.sh opens the same
+  # one (another would be a second agent on the same token).
+  SESSION_SET="$SESSION"
   write_config "$API" "$NAME" "$RUNNER" "$MODEL" "$ROOM_MODEL" "$headless" \
     "$(cfg_get claude_flags)" "$(cfg_get opencode_flags)"
   write_env "$TOKEN"

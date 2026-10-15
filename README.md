@@ -56,7 +56,10 @@ git clone https://github.com/x3beche/redline-agent-seed; cd redline-agent-seed; 
 
 The Agent tokens page shows this line with your server and your token
 already filled in. `--name` (`-Name`) sets the name the agent's work is
-shown under; it defaults to `main`. Leave `--token` out and the script asks
+shown under; it defaults to `main`. `--session` (`-Session`) names the tmux
+session it runs in - give it the name you gave the token, so one computer can
+run an agent for two accounts (default `redline-agent`); it is kept in
+`config.yaml`. Leave `--token` out and the script asks
 for it without showing it.
 
 What it does:
