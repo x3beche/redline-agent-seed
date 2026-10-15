@@ -129,6 +129,10 @@ load_settings() {
   [ -n "$CLAUDE_FLAGS" ] || CLAUDE_FLAGS="$(env_get REDLINE_CLAUDE_FLAGS)"
   [ -n "$CLAUDE_FLAGS" ] || CLAUDE_FLAGS="--allow-dangerously-skip-permissions"
   OPENCODE_FLAGS="$(cfg_get opencode_flags)"
+  # OpenCode: what Claude Code's flag above does. The kit's opencode.json
+  # denies what must stay denied (the token, .env, and any path outside the
+  # folder the agent works in) - --auto approves what is asked, not a deny.
+  [ -n "$OPENCODE_FLAGS" ] || OPENCODE_FLAGS="--auto"
   API="${API%/}"
   case "$HEADLESS" in yes|true|1|on) HEADLESS=yes ;; *) HEADLESS="" ;; esac
   if [ "$SESSION" = "redline-agent" ]; then UNIT="workbench-agent"; else UNIT="workbench-agent-$SESSION"; fi
@@ -420,6 +424,8 @@ run_headless() {
   sleep 3
   log "OpenCode server on $url (opencode attach $url to watch)"
   local args=(run --attach "$url" --dir "$KIT")
+  # shellcheck disable=SC2206  # the flags are words on purpose
+  [ -n "$OPENCODE_FLAGS" ] && args+=($OPENCODE_FLAGS)
   [ -n "$MODEL" ] && args+=(-m "$MODEL")
   if [ "$1" = resume ]; then args+=(-s "$(opencode_session)" "$RESUME_PROMPT"); else args+=("$PROMPT"); fi
   "$OPENCODE" "${args[@]}" || { [ "$1" = resume ] && "$OPENCODE" run --attach "$url" --dir "$KIT" ${MODEL:+-m "$MODEL"} "$PROMPT"; } || true
@@ -434,6 +440,11 @@ run_agent() {
   unset MONGODB_URI
   cd "$KIT"
   mkdir -p work
+  # The drawings and pages the commands write for the agent to look at go in
+  # its own folder, not the system's temporary one: OpenCode refuses a path
+  # outside this folder (the kit's opencode.json, external_directory), so the
+  # temporary folder moves with it.
+  export TMPDIR="$KIT/work"
   local how=fresh
   [ "$RUNNER" = opencode ] && { find_opencode || die "OpenCode is not installed"; opencode_env; }
   has_session && how=resume

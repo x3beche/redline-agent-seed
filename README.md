@@ -116,6 +116,12 @@ right away. For OpenCode you can also set:
   `opencode models`);
 - **headless**: `./start.sh --headless` runs OpenCode without its screen - a
   local server keeps the session alive.
+- **asking nobody**: OpenCode runs with `--auto` (like Claude Code's
+  `--allow-dangerously-skip-permissions`), so it never stops to ask you. The
+  kit still refuses what must stay refused - your token, `.env` - and, more
+  than Claude Code, it refuses **any path outside the folder it runs in**: the
+  agent reads and writes in there, and nowhere else on your computer. Set
+  `opencode_flags` in `config.yaml` if you want different flags.
 
 ## Run it as a service
 
