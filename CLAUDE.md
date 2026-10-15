@@ -1,9 +1,9 @@
-# Redline agent seed
+# Workbench agent seed
 
-This folder starts a Redline agent on the person's own computer. You are
+This folder starts a Workbench agent on the person's own computer. You are
 that agent: Claude Code, started by `start.sh` inside `kit/`.
 
-- `kit/` is the agent kit, fetched from the person's Redline server on
+- `kit/` is the agent kit, fetched from the person's Workbench server on
   each start: the command line (`tools/revisions.py` and friends), the
   instructions (`AGENTS.md`, `kit/CLAUDE.md`) and the room agents
   (`.claude/agents/`). The server's copy is the truth: read

@@ -1,4 +1,4 @@
-# Start your Redline agent on Windows, in WSL.
+# Start your Workbench agent on Windows, in WSL.
 #
 #   powershell -ExecutionPolicy Bypass -File start.ps1 -Api https://your-redline-server -Token rlat_...
 #   powershell -ExecutionPolicy Bypass -File start.ps1            start again (settings from .env)
@@ -29,7 +29,7 @@ if ($LASTEXITCODE -ne 0) {
   exit 1
 }
 
-if ($Token -and $Token -notmatch '^rlat_[A-Za-z0-9_-]+$') { Write-Host "An agent token starts with rlat_ - make one in Redline under Agent tokens."; exit 1 }
+if ($Token -and $Token -notmatch '^rlat_[A-Za-z0-9_-]+$') { Write-Host "An agent token starts with rlat_ - make one in Workbench under Agent tokens."; exit 1 }
 if ($Api -and $Api -notmatch '^https?://[^\s''"]+$') { Write-Host "The server address starts with https://"; exit 1 }
 
 $argv = @()

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Start your Redline agent on this computer.
+# Start your Workbench agent on this computer.
 #
 #   ./start.sh --api https://your-redline-server --token rlat_...   first time
 #   ./start.sh                     start again (settings from .env, kit updated)
@@ -10,7 +10,7 @@
 #
 # The settings are kept in .env next to this file (readable only by you,
 # never committed). The agent kit - the command line and the instructions
-# the agent follows - is fetched from your Redline server into kit/ on each
+# the agent follows - is fetched from your Workbench server into kit/ on each
 # start, so it is always the server's current one.
 set -euo pipefail
 
@@ -18,7 +18,7 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 KIT="$HERE/kit"
 ENV_FILE="$HERE/.env"
 SESSION="${REDLINE_SESSION:-redline-agent}"
-PROMPT="You are the Redline main agent for this account, working on this computer through the Redline server with the REDLINE_* settings in your environment. Never print, echo, write or paste REDLINE_TOKEN. Read CLAUDE.md and AGENTS.md, then start the main-agent loop from AGENTS.md and keep it going."
+PROMPT="You are the Workbench main agent for this account, working on this computer through the Workbench server with the REDLINE_* settings in your environment. Never print, echo, write or paste REDLINE_TOKEN. Read CLAUDE.md and AGENTS.md, then start the main-agent loop from AGENTS.md and keep it going."
 
 say()  { printf '%s\n' "$*"; }
 die()  { printf 'start.sh: %s\n' "$*" >&2; exit 1; }
@@ -65,16 +65,16 @@ load_settings() {
 ask_missing() {
   if [ -z "$API" ]; then
     [ -t 0 ] || die "no server address: ./start.sh --api https://your-redline-server --token rlat_..."
-    read -r -p "Redline server address (e.g. https://redline.example.com): " API
+    read -r -p "Workbench server address (e.g. https://workbench.example.com): " API
     API="${API%/}"
   fi
   if [ -z "$TOKEN" ]; then
-    [ -t 0 ] || die "no token: make one in Redline (user menu > Agent tokens), then ./start.sh --token rlat_..."
-    read -r -s -p "Agent token (rlat_..., from user menu > Agent tokens; not shown): " TOKEN
+    [ -t 0 ] || die "no token: make one in Workbench (Settings > Agent tokens), then ./start.sh --token rlat_..."
+    read -r -s -p "Agent token (rlat_..., from Settings > Agent tokens; not shown): " TOKEN
     echo
   fi
   case "$API" in http://*|https://*) ;; *) die "the server address starts with https:// - got '$API'" ;; esac
-  case "$TOKEN" in rlat_*) ;; *) die "an agent token starts with rlat_ - make one in Redline under Agent tokens" ;; esac
+  case "$TOKEN" in rlat_*) ;; *) die "an agent token starts with rlat_ - make one in Workbench under Agent tokens" ;; esac
   case "$NAME" in *[!A-Za-z0-9._\ -]*) die "the agent name may use letters, digits, space, . _ and - only" ;; esac
 }
 
@@ -82,9 +82,9 @@ save_settings() {
   local extra=""
   [ -f "$ENV_FILE" ] && extra="$(grep -v -E '^(REDLINE_API|REDLINE_TOKEN|REDLINE_AGENT)=' "$ENV_FILE" || true)"
   ( umask 077
-    { printf '# Redline agent settings - keep this file to yourself, never commit it.\n'
+    { printf '# Workbench agent settings - keep this file to yourself, never commit it.\n'
       printf 'REDLINE_API=%s\nREDLINE_TOKEN=%s\nREDLINE_AGENT=%s\n' "$API" "$TOKEN" "$NAME"
-      [ -n "$extra" ] && printf '%s\n' "$extra" | grep -v '^# Redline agent settings' || true
+      [ -n "$extra" ] && printf '%s\n' "$extra" | grep -v '^# Workbench agent settings' || true
     } > "$ENV_FILE.new" )
   mv "$ENV_FILE.new" "$ENV_FILE"
   chmod 600 "$ENV_FILE"
@@ -118,19 +118,19 @@ fetch_kit() {
 import io, json, os, shutil, sys, tarfile, urllib.error, urllib.request
 api, kit = sys.argv[1], sys.argv[2]
 headers = {"Authorization": "Bearer " + os.environ["REDLINE_TOKEN"], "User-Agent": "redline-agent-seed",
-           "X-Redline-Actor": "agent:" + os.environ.get("REDLINE_AGENT", "main"), "X-Redline-CSRF": "1"}
+           "X-Workbench-Actor": "agent:" + os.environ.get("REDLINE_AGENT", "main"), "X-Workbench-CSRF": "1"}
 
 def get(path):
     try:
         return urllib.request.urlopen(urllib.request.Request(api + path, headers=headers), timeout=180)
     except urllib.error.HTTPError as e:
         if e.code == 401:
-            sys.exit("the token is unknown, revoked or expired - make a new one in Redline (user menu > Agent tokens) "
+            sys.exit("the token is unknown, revoked or expired - make a new one in Workbench (Settings > Agent tokens) "
                      "and run ./start.sh --token rlat_...")
         if e.code == 403:
-            sys.exit("the server refused the kit (403) - is this an agent token from user menu > Agent tokens?")
+            sys.exit("the server refused the kit (403) - is this an agent token from Settings > Agent tokens?")
         if e.code == 404:
-            sys.exit(f"{api} has no agent kit - is this the address of your Redline server?")
+            sys.exit(f"{api} has no agent kit - is this the address of your Workbench server?")
         sys.exit(f"{api}{path}: HTTP {e.code}")
     except urllib.error.URLError as e:
         hint = (" (on macOS with Python from python.org, run 'Install Certificates.command' once)"

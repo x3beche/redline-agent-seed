@@ -1,15 +1,15 @@
 # redline-agent-seed
 
-Run your **Redline agent** on your own computer.
+Run your **Workbench agent** on your own computer.
 
-In Redline you mark up a model or a board and queue a note; an AI agent
+In Workbench you mark up a model or a board and queue a note; an AI agent
 does the work. That agent is [Claude Code](https://docs.anthropic.com/en/docs/claude-code),
-running on **your** computer and talking to your Redline server with an
+running on **your** computer and talking to your Workbench server with an
 agent token. This repository is all you need for it: a start script and
-the agent's standing instructions. No Redline source code, no database
+the agent's standing instructions. No Workbench source code, no database
 password.
 
-On every start the script fetches the **agent kit** from your Redline
+On every start the script fetches the **agent kit** from your Workbench
 server (the command line the agent uses and the instructions it follows,
 `GET /api/agent/kit`), so the agent is always in step with the server.
 Builds, parts and other heavy work run on the server.
@@ -32,7 +32,7 @@ Builds, parts and other heavy work run on the server.
 
 ## 1. Make a token
 
-In Redline: **user menu > Agent tokens > New token**. Name it after the
+In Workbench: **user menu > Agent tokens > New token**. Name it after the
 computer it will run on (for example `laptop`) and press *Make token*.
 The token (`rlat_...`) is shown **once**, together with the full line to
 run - copy it from there.
@@ -67,7 +67,7 @@ What it does:
    Claude Code asks whether you trust the folder: say yes. Detach with
    `Ctrl-b d`; the agent keeps running.
 
-Then go back to Redline: the first-run guide and the Agent tokens page
+Then go back to Workbench: the first-run guide and the Agent tokens page
 show the agent as **connected**. Queue a note and watch it work.
 
 ## 3. Keep it running
@@ -93,7 +93,7 @@ picks up a new one). For a newer start script: `git pull`.
   listed in `.gitignore`, never committed. Do not paste it anywhere else.
 - The one-line command contains it, so it is also in your shell history.
   On a shared computer, leave `--token` out and type it when asked.
-- Everything the agent does is recorded in Redline under the token's
+- Everything the agent does is recorded in Workbench under the token's
   name. A token is at most an *editor* and only works in your own space.
 - **Revoke it** any time under Agent tokens (*Revoke*): the agent stops at
   once. To use a new one: `./start.sh --restart --token rlat_NEW`.
@@ -107,7 +107,7 @@ picks up a new one). For a newer start script: `git pull`.
   (or `python3.12-venv`), or install [uv](https://docs.astral.sh/uv/).
 - *CERTIFICATE_VERIFY_FAILED* on macOS: run *Install Certificates.command*
   from your Python's folder in Applications.
-- Not connected in Redline: `./start.sh --status`, then
+- Not connected in Workbench: `./start.sh --status`, then
   `tmux attach -t redline-agent` to see what the agent is doing.
 - To choose how Claude Code is started, set `REDLINE_CLAUDE_FLAGS` in
   `.env` (default `--allow-dangerously-skip-permissions`, which lets you
@@ -116,12 +116,12 @@ picks up a new one). For a newer start script: `git pull`.
 
 ## Türkçe
 
-Bu depo, Redline ajanınızı **kendi bilgisayarınızda** çalıştırmak için
-gereken her şeyi içerir: bir başlatma betiği ve ajanın talimatları. Redline
+Bu depo, Workbench ajanınızı **kendi bilgisayarınızda** çalıştırmak için
+gereken her şeyi içerir: bir başlatma betiği ve ajanın talimatları. Workbench
 kaynak kodu ya da veritabanı şifresi gerekmez; ajan, sunucunuza bir ajan
 anahtarıyla bağlanır ve her başlangıçta ajan kitini sunucudan indirir.
 
-1. **Anahtar oluşturun**: Redline'da kullanıcı menüsü > *Ajan anahtarları*
+1. **Anahtar oluşturun**: Workbench'da kullanıcı menüsü > *Ajan anahtarları*
    > *Yeni anahtar*. Anahtar (`rlat_...`) yalnızca bir kez gösterilir;
    çalıştırılacak satır da hemen orada, anahtarınız ve sunucu adresiniz
    doldurulmuş olarak çıkar.
