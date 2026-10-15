@@ -45,22 +45,41 @@ run - copy it from there.
 macOS / Linux / WSL:
 
 ```bash
-git clone https://github.com/x3beche/redline-agent-seed; cd redline-agent-seed && ./start.sh --api https://YOUR-REDLINE-SERVER --token rlat_YOUR_TOKEN
+curl -fsSL https://YOUR-REDLINE-SERVER/api/public/install.sh | bash -s -- --token rlat_YOUR_TOKEN
 ```
 
 Windows (PowerShell):
 
 ```powershell
+wsl bash -c "curl -fsSL https://YOUR-REDLINE-SERVER/api/public/install.sh | bash -s -- --token rlat_YOUR_TOKEN"
+```
+
+That script comes from your own server and has its address already in it, so
+the token is the only thing you type. It fetches this repository into
+`~/redline-agent-seed` (or updates it when you run the line again) and then
+hands everything to the `start.sh` below - the settings, the runner, the tmux
+session, the service. Add `--runner opencode`, `--model provider/model`,
+`--name`, `--session`, `--headless`, `--service` or `--dry-run` and they go
+through as they are. Point it at another server with `--api`.
+
+**Or do it by hand**, if you would rather read the script than pipe it into a
+shell (the same script is at `https://YOUR-REDLINE-SERVER/api/public/install.sh`):
+
+```bash
+git clone https://github.com/x3beche/redline-agent-seed; cd redline-agent-seed && ./start.sh --api https://YOUR-REDLINE-SERVER --token rlat_YOUR_TOKEN
+```
+
+```powershell
 git clone https://github.com/x3beche/redline-agent-seed; cd redline-agent-seed; powershell -ExecutionPolicy Bypass -File start.ps1 -Api https://YOUR-REDLINE-SERVER -Token rlat_YOUR_TOKEN
 ```
 
-The Agent tokens page shows this line with your server and your token
+The Agent tokens page shows the installer line with your server and your token
 already filled in. `--name` (`-Name`) sets the name the agent's work is
 shown under; it defaults to `main`. `--session` (`-Session`) names the tmux
 session it runs in - give it the name you gave the token, so one computer can
 run an agent for two accounts (default `redline-agent`); it is kept in
-`config.yaml`. Leave `--token` out and the script asks
-for it without showing it.
+`config.yaml`. Leave `--token` out and you are asked for it, without it being
+shown.
 
 What it does:
 
@@ -208,8 +227,14 @@ Varsayılan olarak Claude Code üzerinde, isterseniz OpenCode üzerinde çalış
    çalıştırılacak satır da hemen orada, anahtarınız ve sunucu adresiniz
    doldurulmuş olarak çıkar.
 2. **Tek satırı çalıştırın** (macOS / Linux / WSL):
-   `git clone https://github.com/x3beche/redline-agent-seed; cd redline-agent-seed && ./start.sh --api https://SUNUCUNUZ --token rlat_ANAHTARINIZ`
-   Windows'ta PowerShell satırını kullanın (ajan WSL içinde çalışır).
+   `curl -fsSL https://SUNUCUNUZ/api/public/install.sh | bash -s -- --token rlat_ANAHTARINIZ`
+   Bu script sunucunuzdan gelir ve adresi içinde hazırdır; yazdığınız tek şey
+   anahtardır. Depoyu `~/redline-agent-seed` içine indirir (ikinci kez
+   çalıştırınca günceller) ve her şeyi `start.sh`'a devreder.
+   Windows'ta `wsl bash -c "curl -fsSL https://SUNUCUNUZ/api/public/install.sh | bash -s -- --token rlat_ANAHTARINIZ"`
+   satırını kullanın (ajan WSL içinde çalışır). Script'i boruya vermek yerine
+   kendiniz çalıştırmak isterseniz, README'nin İngilizce bölümündeki
+   "Or do it by hand" satırlarını kullanın.
 3. **Açık tutun**: Ajan, kuyruğa aldığınız notlar üzerindeki işi yapan
    şeydir; geliştirdiğiniz sürece bilgisayarınızda çalışır durumda olmalı.
    Durursa notlar kuyrukta bekler. `./start.sh` yeniden başlatır (ve
