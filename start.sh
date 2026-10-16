@@ -449,10 +449,22 @@ opencode_env() {
   fi
 }
 
+# OpenCode headless keeps a local server on a port, and two agents on one
+# computer - two accounts, two folders - must not want the same one. The port
+# follows the session's name unless it is given: REDLINE_OPENCODE_PORT, or
+# `port:` in config.yaml.
+opencode_port() {
+  local p
+  p="${REDLINE_OPENCODE_PORT:-$(cfg_get port)}"
+  if [ -z "$p" ]; then p=$((4096 + $(printf '%s' "$SESSION" | cksum | cut -d' ' -f1) % 1000)); fi
+  printf '%s' "$p"
+}
+
 # OpenCode without its screen: a local server keeps the session (and the
 # kit's watcher) alive; `opencode attach <url>` shows it.
 run_headless() {
-  local port="${REDLINE_OPENCODE_PORT:-4096}" url srv
+  local port url srv
+  port="$(opencode_port)"
   url="http://127.0.0.1:$port"
   "$OPENCODE" serve --hostname 127.0.0.1 --port "$port" &
   srv=$!
@@ -682,8 +694,8 @@ dry_run() {
   has_session && how=resume
   [ "$RUNNER" = opencode ] && { find_opencode || OPENCODE=opencode; }
   runner_cmd "$how"
-  printf 'api: %s\nagent: %s\nrunner: %s\nmodel: %s\nroom_model: %s\nheadless: %s\nsession: %s\nupdate: %s\nservice: %s (%s)\ntoken: %s\nkit: %s\nstart: %s\n' \
-    "${API:-none}" "$NAME" "$RUNNER" "${MODEL:-default}" "${ROOM_MODEL:-same as model}" "${HEADLESS:-no}" "$SESSION" "$UPDATE" \
+  printf 'api: %s\nagent: %s\nrunner: %s\nmodel: %s\nroom_model: %s\nheadless: %s\nsession: %s\nport: %s\nupdate: %s\nservice: %s (%s)\ntoken: %s\nkit: %s\nstart: %s\n' \
+    "${API:-none}" "$NAME" "$RUNNER" "${MODEL:-default}" "${ROOM_MODEL:-same as model}" "${HEADLESS:-no}" "$SESSION" "$(opencode_port)" "$UPDATE" \
     "$UNIT" "$(service_installed && echo installed || echo not installed)" "$([ -n "$TOKEN" ] && echo set || echo missing)" \
     "$KIT" "$how"
   printf 'command:'; printf ' %q' "${CMD[@]}" | sed 's/ [^ ]*You\\ .*$/ <prompt>/'; printf '\n'

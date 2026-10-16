@@ -152,6 +152,25 @@ right away. For OpenCode you can also set:
   agent reads and writes in there, and nowhere else on your computer. Set
   `opencode_flags` in `config.yaml` if you want different flags.
 
+## Two accounts on one computer
+
+A second account's agent runs beside the first: its own folder, its own token,
+its own tmux session. The session's name is what keeps them apart, so give it
+the name of the token the same way, and a folder of its own:
+
+```bash
+curl -fsSL https://YOUR-REDLINE-SERVER/api/public/install.sh | bash -s -- --token rlat_SECOND --dir ~/redline-agent-second --session second
+```
+
+`--session` is kept in `config.yaml`, so a later `./start.sh` in that folder
+uses it too. Without it both would call their tmux session `redline-agent` and
+the second would stop with "already running". A headless OpenCode takes a port
+of its own from the session's name as well (`port:` in `config.yaml`, or
+`REDLINE_OPENCODE_PORT`), so two of them never want 4096 at once. Everything
+else is per folder already: the kit, the logs, the settings, the token, and
+the service, which is named after the session
+(`workbench-agent-<session>`).
+
 ## Run it as a service
 
 To keep the agent running after a reboot:
@@ -177,8 +196,8 @@ The very first time you can do it in one go, when you make the token:
 
 Settings live in `config.yaml` next to this file - plain `key: value` lines
 (`api`, `agent`, `runner`, `model`, `room_model`, `headless`, `claude_flags`,
-`opencode_flags`, `session`, `update`); a `#` starts a comment. Edit it by hand,
-or use the flags above.
+`opencode_flags`, `session`, `port`, `update`); a `#` starts a comment. Edit it
+by hand, or use the flags above.
 
 The **token is never in `config.yaml`**: it lives only in `.env`, readable
 only by you (mode 600) and never committed. Both files are in `.gitignore`.
@@ -265,6 +284,19 @@ yok) eldekiyle devam eder ve bunu `./start.sh logs`'ta söyler. Kapatmak için
 `./start.sh opencode` (geri dönmek için `./start.sh claude`), model için
 `./start.sh --model provider/model`, ekransız çalıştırmak için
 `./start.sh --headless`.
+
+**Aynı bilgisayarda iki hesap**: ikinci hesabın ajanı birincinin yanında
+çalışır - kendi klasörü, kendi anahtarı, kendi tmux oturumu. Onları ayıran şey
+oturum adıdır; anahtara verdiğiniz adı ona da verin ve ayrı bir klasör seçin:
+
+`curl -fsSL https://SUNUCUNUZ/api/public/install.sh | bash -s -- --token rlat_IKINCI --dir ~/redline-agent-ikinci --session ikinci`
+
+`--session` `config.yaml`'a yazılır, o klasörde sonraki `./start.sh` de onu
+kullanır. Verilmezse ikisi de tmux oturumunu `redline-agent` yapar ve ikincisi
+"already running" deyip durur. Ekransız OpenCode portunu da oturum adından
+alır (`config.yaml`'daki `port:` ya da `REDLINE_OPENCODE_PORT`), böylece ikisi
+4096'yı paylaşmaz. Geri kalan her şey zaten klasör başına: kit, loglar,
+ayarlar, anahtar ve servis (`workbench-agent-<oturum>`).
 
 **Servis olarak**: her açılışta başlaması için `./start.sh install`,
 kaldırmak için `./start.sh uninstall` (ilk seferde tek seferde

@@ -56,6 +56,8 @@ check "config.yaml with quotes and comments" 'grep -q "^runner: opencode$" <<<"$
 check "OpenCode command line" 'grep -q "^command: .*opencode --auto -m test/vision --prompt <prompt>$" <<<"$out"'
 check "session and unit from config.yaml" 'grep -q "^session: test-session$" <<<"$out" && grep -q "^service: workbench-agent-test-session (not installed)$" <<<"$out"'
 check "the seed updates itself unless told not to" 'grep -q "^update: yes$" <<<"$out" && grep -q "^update: no$" <<<"$(printf "update: no\n" >> config.yaml; run --dry-run)"'
+check "two agents on one computer get different ports" '[ "$(run --dry-run --session a1 | sed -n "s/^port: //p")" != "$(run --dry-run --session a2 | sed -n "s/^port: //p")" ]'
+check "port: in config.yaml is used" 'grep -q "^port: 5000$" <<<"$(printf "port: 5000\n" >> config.yaml; run --dry-run)"'
 check "--runner on the command line wins" 'grep -q "^runner: claude$" <<<"$(run --dry-run --runner claude)"'
 check "--session names the session" 'grep -q "^session: mybox$" <<<"$(run --dry-run --session mybox)"'
 
