@@ -251,6 +251,16 @@ Varsayılan olarak Claude Code üzerinde, isterseniz OpenCode üzerinde çalış
    yaptığını gösterir, `./start.sh --dry-run` yalnızca ayarları yazdırır.
    Yeniden başlayınca **son konuşmayı sürdürür**, baştan başlamaz.
 
+**Kendini günceller**: iki parça da her başlangıçta kendini günceller, yani
+kurulum satırını bir kez çalıştıran bilgisayar bir daha uğraşmaz. **Ajan
+kiti** her seferinde Workbench sunucunuzdan indirilir; bu **depo** da
+başlamadan önce `git pull --ff-only` ile ileri alınır - yeni `start.sh` dahil:
+betik değiştiyse en baştan yeniden çalışır ve ayarlarınız, anahtarınız, tmux
+oturumunuz korunur (`config.yaml`, `.env`, `logs/`, `kit/` git tarafından
+yoksayılır, yerinde kalır). Güncelleme yapılamazsa (yerel değişiklik ya da ağ
+yok) eldekiyle devam eder ve bunu `./start.sh logs`'ta söyler. Kapatmak için
+`config.yaml` dosyasına `update: no` yazın.
+
 **Runner seçimi**: Claude Code varsayılandır; OpenCode için
 `./start.sh opencode` (geri dönmek için `./start.sh claude`), model için
 `./start.sh --model provider/model`, ekransız çalıştırmak için
