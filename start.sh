@@ -48,6 +48,7 @@ log() {
 usage() { sed -n '2,23p' "$0" | sed 's/^# \{0,1\}//'; }
 
 API="" TOKEN="" NAME="" RUNNER="" MODEL="" HEADLESS="" SESSION_OPT="" MODE="start" DRY=0 WANT_SERVICE=0
+ORIG_ARGS=("$@")
 while [ $# -gt 0 ]; do
   case "$1" in
     --api) [ $# -ge 2 ] || die "--api needs the server's address"; API="$2"; shift 2 ;;
@@ -93,6 +94,34 @@ cfg_get() {
     -e 's/^"\(.*\)"$/\1/' -e "s/^'\(.*\)'\$/\1/"
 }
 
+# The repository this script lives in, pulled forward at every start: a seed
+# that was cloned once keeps itself current, so a fix or a new option reaches
+# a computer that runs the agent without anyone running the install line
+# again. Only tracked files move - config.yaml, .env, logs/ and the kit are
+# ignored and stay, and so does the token, so the agent carries on where it
+# was. bash reads a script as it runs, so when start.sh itself changed the
+# run starts over from the top, once. `update: no` in config.yaml turns it off.
+seed_update() {
+  [ "$DRY" = 1 ] && return 0
+  [ -n "${REDLINE_SEED_UPDATED:-}" ] && return 0
+  [ -d "$HERE/.git" ] || return 0
+  [ "$(cfg_get update)" = "no" ] && return 0
+  command -v git >/dev/null 2>&1 || return 0
+  local before after b a
+  before="$(git -C "$HERE" rev-parse HEAD 2>/dev/null || true)"
+  if ! git -C "$HERE" pull --ff-only --quiet >/dev/null 2>&1; then
+    log "the seed could not be updated (local changes, or no network) - going on with this one"
+    return 0
+  fi
+  after="$(git -C "$HERE" rev-parse HEAD 2>/dev/null || true)"
+  [ -n "$before" ] && [ -n "$after" ] && [ "$before" != "$after" ] || return 0
+  b="$(git -C "$HERE" rev-parse --short "$before" 2>/dev/null || echo "$before")"
+  a="$(git -C "$HERE" rev-parse --short "$after" 2>/dev/null || echo "$after")"
+  say "the seed updated ($b -> $a) - starting over from the top"
+  export REDLINE_SEED_UPDATED=1
+  exec bash "$HERE/start.sh" ${ORIG_ARGS[@]+"${ORIG_ARGS[@]}"}
+}
+
 # .env: KEY=VALUE lines only; nothing in it is ever run.
 env_get() {
   [ -f "$ENV_FILE" ] || return 0
@@ -127,6 +156,8 @@ load_settings() {
   ROOM_MODEL="$(cfg_get room_model)"
   SESSION="${SESSION_OPT:-${REDLINE_SESSION:-$(cfg_get session)}}"
   SESSION="${SESSION:-redline-agent}"
+  UPDATE="$(cfg_get update)"
+  [ -n "$UPDATE" ] || UPDATE="yes"
   CLAUDE_FLAGS="$(cfg_get claude_flags)"
   [ -n "$CLAUDE_FLAGS" ] || CLAUDE_FLAGS="$(env_get REDLINE_CLAUDE_FLAGS)"
   [ -n "$CLAUDE_FLAGS" ] || CLAUDE_FLAGS="--allow-dangerously-skip-permissions"
@@ -651,12 +682,17 @@ dry_run() {
   has_session && how=resume
   [ "$RUNNER" = opencode ] && { find_opencode || OPENCODE=opencode; }
   runner_cmd "$how"
-  printf 'api: %s\nagent: %s\nrunner: %s\nmodel: %s\nroom_model: %s\nheadless: %s\nsession: %s\nservice: %s (%s)\ntoken: %s\nkit: %s\nstart: %s\n' \
-    "${API:-none}" "$NAME" "$RUNNER" "${MODEL:-default}" "${ROOM_MODEL:-same as model}" "${HEADLESS:-no}" "$SESSION" \
+  printf 'api: %s\nagent: %s\nrunner: %s\nmodel: %s\nroom_model: %s\nheadless: %s\nsession: %s\nupdate: %s\nservice: %s (%s)\ntoken: %s\nkit: %s\nstart: %s\n' \
+    "${API:-none}" "$NAME" "$RUNNER" "${MODEL:-default}" "${ROOM_MODEL:-same as model}" "${HEADLESS:-no}" "$SESSION" "$UPDATE" \
     "$UNIT" "$(service_installed && echo installed || echo not installed)" "$([ -n "$TOKEN" ] && echo set || echo missing)" \
     "$KIT" "$how"
   printf 'command:'; printf ' %q' "${CMD[@]}" | sed 's/ [^ ]*You\\ .*$/ <prompt>/'; printf '\n'
 }
+
+# The seed keeps itself current before anything starts (never for the commands
+# that only look): a newer start.sh, or a newer anything, arrives without the
+# install line being run again.
+if [ "$MODE" != stop ] && [ "$MODE" != status ] && [ "$MODE" != logs ]; then seed_update; fi
 
 case "$MODE" in
   run) run_agent; exit ;;

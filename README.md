@@ -118,8 +118,15 @@ agent is restarted, the next start carries on the last conversation instead
 of beginning again - it re-reads `CLAUDE.md`/`AGENTS.md` (they may have
 changed) and continues the main-agent loop.
 
-**Updating**: the kit updates itself on every start (`./start.sh restart`
-picks up a new one). For a newer start script: `git pull`.
+**Updating**: both parts update themselves on every start, so a computer that
+has run the install line once keeps up without it. The **agent kit** is fetched
+from your Workbench server each time, and this **repository** is pulled forward
+(`git pull --ff-only`) before anything starts - a newer `start.sh` included: the
+script then runs itself again from the top with your settings, token and tmux
+session untouched, because `config.yaml`, `.env`, `logs/` and `kit/` are
+ignored by git and stay. If the pull cannot be done (local changes, no network)
+the start goes on with what is there and says so in `./start.sh logs`. Put
+`update: no` in `config.yaml` to stop it.
 
 ## Choosing the runner
 
@@ -170,8 +177,8 @@ The very first time you can do it in one go, when you make the token:
 
 Settings live in `config.yaml` next to this file - plain `key: value` lines
 (`api`, `agent`, `runner`, `model`, `room_model`, `headless`, `claude_flags`,
-`opencode_flags`, `session`); a `#` starts a comment. Edit it by hand, or use
-the flags above.
+`opencode_flags`, `session`, `update`); a `#` starts a comment. Edit it by hand,
+or use the flags above.
 
 The **token is never in `config.yaml`**: it lives only in `.env`, readable
 only by you (mode 600) and never committed. Both files are in `.gitignore`.
